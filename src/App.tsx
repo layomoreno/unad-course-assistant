@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { COURSES, Activity } from './constants';
 import { getEventDate, getReminders, formatDate } from './lib/dateUtils';
-import { format } from 'date-fns';
+import { format, parseISO, startOfDay } from 'date-fns';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -37,6 +37,7 @@ export default function App() {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [pendingSync, setPendingSync] = useState<PendingSync | null>(null);
   const [today] = useState(() => new Date());
+  const todayStart = useMemo(() => startOfDay(today), [today]);
 
   // Check auth status on mount
   useEffect(() => {
@@ -191,8 +192,8 @@ export default function App() {
   };
 
   const getActivityStatus = (endDateStr: string) => {
-    const endDate = new Date(endDateStr);
-    const diffDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const endDate = parseISO(endDateStr);
+    const diffDays = Math.ceil((endDate.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) return { label: 'Cerrada', color: 'bg-gray-100 text-gray-500', icon: CheckCircle };
     if (diffDays <= 3) return { label: 'Cierra pronto (3d)', color: 'bg-red-100 text-red-600', icon: AlertCircle };
@@ -345,14 +346,14 @@ export default function App() {
                               <p className="font-bold text-slate-400 mb-1 uppercase tracking-tighter">Apertura</p>
                               <div className="flex items-center gap-1.5 font-medium text-slate-700">
                                 <Calendar className="h-3.5 w-3.5" />
-                                {formatDate(new Date(activity.startDate))}
+                                {formatDate(parseISO(activity.startDate))}
                               </div>
                             </div>
                             <div>
                                <p className="font-bold text-slate-400 mb-1 uppercase tracking-tighter">Cierre</p>
                                <div className="flex items-center gap-1.5 font-medium text-rose-600">
                                 <Calendar className="h-3.5 w-3.5 text-rose-400" />
-                                {formatDate(new Date(activity.endDate))}
+                                {formatDate(parseISO(activity.endDate))}
                               </div>
                             </div>
                           </div>
@@ -369,7 +370,7 @@ export default function App() {
                              </div>
                           ) : (
                             <button
-                              disabled={new Date(activity.endDate) < today || isSyncing === activity.id}
+                              disabled={isSyncing === activity.id}
                               onClick={() => handleSync(activity)}
                               className={cn(
                                 "inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
