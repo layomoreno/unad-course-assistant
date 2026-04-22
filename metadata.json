@@ -1,0 +1,6 @@
+{
+  "name": "UNAD Course Assistant",
+  "description": "A specialized manager for academic activities, featuring automatic calendar events and multi-checkpoint reminders for course deadlines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
